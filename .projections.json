@@ -1,0 +1,10 @@
+{
+  "spec/*_spec.rb": {
+    "skeleton": "spec",
+    "template": []
+  },
+  "spec/support/*.rb": {
+    "skeleton": "spec_support",
+    "template": []
+  }
+}
