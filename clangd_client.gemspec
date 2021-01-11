@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "lib/clangd_client/version"
+require_relative "lib/clangd_client/gem_version"
 
 Gem::Specification.new do |spec|
   spec.name          = "clangd_client"
