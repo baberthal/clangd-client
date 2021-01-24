@@ -49,16 +49,11 @@ module ClangdClient
     end
 
     def [](idx)
-      case idx
-      when 0 then major
-      when 1 then minor
-      when 2 then patch
-      else raise ArgumentError, "Invalid index: #{idx}"
-      end
+      to_a[idx]
     end
 
     def to_s
-      to_a.to_s
+      to_a.join(".")
     end
 
     def to_a

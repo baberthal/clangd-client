@@ -35,4 +35,23 @@ RSpec.describe ClangdClient::Version do
       expect(version10).to be < version11
     end
   end
+
+  describe "#[]" do
+    it "provides array-index like access" do
+      expect(version10[0]).to eq 10
+    end
+  end
+
+  describe "#to_a" do
+    it "returns an array containing major,minor,patch versions" do
+      ary = version10.to_a
+      expect(ary).to eq [10, 0, 0]
+    end
+  end
+
+  describe "#to_s" do
+    it "returns a string representative of the version" do
+      expect(version10.to_s).to eq "10.0.0"
+    end
+  end
 end
