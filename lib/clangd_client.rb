@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
-require_relative "clangd_client/gem_version"
+require "clangd_client/gem_version"
+
+require "clangd_client/logging"
+require "clangd_client/version"
 
 # Top-level module for the clangd client.
 module ClangdClient
