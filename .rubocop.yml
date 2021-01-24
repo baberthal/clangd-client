@@ -52,6 +52,7 @@ Metrics/BlockLength:
   Exclude:
     - Vagrantfile
     - Guardfile
+    - '**/*_spec.rb'
 
 Metrics/ClassLength:
   Max: 150
