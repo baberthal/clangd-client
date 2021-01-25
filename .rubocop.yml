@@ -1,7 +1,7 @@
 require: rubocop-rspec
 
 AllCops:
-  TargetRubyVersion: 2.6
+  TargetRubyVersion: 2.7
   NewCops: enable
   Exclude:
     - '*.gemspec'
@@ -62,6 +62,15 @@ Metrics/MethodLength:
 
 Metrics/ModuleLength:
   Max: 150
+
+#################
+#  Naming Cops  #
+#################
+
+Naming/MethodParameterName:
+  AllowedNames:
+    - io
+    - fd
 
 ################
 #  Style Cops  #
