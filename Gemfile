@@ -8,6 +8,9 @@ gemspec
 gem "rake", "~> 13.0"
 gem "rspec", "~> 3.0"
 
+gem "concurrent-ruby"
+gem "concurrent-ruby-ext", platform: :mri
+
 group :development, :test do
   gem "rubocop"
   gem "rubocop-rake"
