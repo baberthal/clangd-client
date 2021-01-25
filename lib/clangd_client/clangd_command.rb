@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 require_relative "version"
-require_relative "logging"
+require "language_server/common/logging"
 
 module ClangdClient
   # Represents the command that will be run for clangd.
   class ClangdCommand
-    extend Logging
+    extend LanguageServer::Logging
 
     MIN_SUPPORTED_VERSION = Version.new(11, 0, 0)
     NOT_CACHED = Object.new.freeze

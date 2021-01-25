@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "clangd_client/logging"
+require "language_server/common/logging"
 
 module ClangdClient
   # General utility methods that have no other home.
@@ -65,7 +65,7 @@ module ClangdClient
     def list_directory(path)
       Dir.foreach(path).reject { |p| %w[. ..].include?(p) }
     rescue StandardError => e
-      Logging.log_error("Error while listing #{path} folder", e)
+      LanguageServer::Logging.log_error("Error while listing #{path} folder", e)
       []
     end
 

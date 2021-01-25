@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
+require "language_server/common"
+
 require "clangd_client/gem_version"
 
 require "clangd_client/clangd_command"
-require "clangd_client/logging"
 require "clangd_client/user_options"
 require "clangd_client/utils"
 require "clangd_client/version"

@@ -2,7 +2,7 @@
 
 require "logger"
 
-module ClangdClient
+module LanguageServer
   # Module to hold logging abstractions.
   module Logging
     # Simple formatter which only displays the message
