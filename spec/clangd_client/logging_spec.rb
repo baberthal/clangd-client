@@ -70,4 +70,22 @@ RSpec.describe ClangdClient::Logging, logging_helpers: true do
       expect(out).to include "HEY!"
     end
   end
+
+  describe ".enabled_for?" do
+    before do
+      described_class.level = Logger::INFO
+    end
+
+    it "returns true if messages will be logged at the given level" do
+      expect(described_class.enabled_for?(Logger::INFO)).to be true
+    end
+
+    it "returns false if messages will not be logged at the given level" do
+      expect(described_class.enabled_for?(Logger::DEBUG)).to be false
+    end
+
+    it "returns true if messages will be logged (w/ higher severity)" do
+      expect(described_class.enabled_for?(Logger::WARN)).to be true
+    end
+  end
 end

@@ -34,6 +34,11 @@ module ClangdClient
         @logger.level = value
       end
 
+      # Returns +true+ if the logger is enabled for the given level.
+      def enabled_for?(severity)
+        level <= severity
+      end
+
       # Sets a custom logger.
       #
       # @param custom_logger [Logger] The custom logger to use.
