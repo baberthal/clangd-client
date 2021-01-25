@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-RSpec.describe ClangdClient::Logging, logging_helpers: true do
+RSpec.describe LanguageServer::Logging, logging_helpers: true do
   subject(:obj) { klass.new }
 
-  let(:klass) { Class.new { include ClangdClient::Logging } }
+  let(:klass) { Class.new { include LanguageServer::Logging } }
 
   after do
     described_class.level = Logger::INFO
