@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "concurrent"
+
 require "language_server/client/gem_version"
 
 module LanguageServer
@@ -7,3 +9,5 @@ module LanguageServer
   module Client
   end
 end
+
+LS = LanguageServer unless defined?(LS)
