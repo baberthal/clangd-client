@@ -33,6 +33,7 @@ end
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
   config.include Spec::Helpers
+  config.include Spec::Paths
   config.include Spec::LoggingHelpers, logging_helpers: true
 
   # rspec-expectations config goes here. You can use an alternate
