@@ -12,7 +12,7 @@ require "clangd_client"
 require "language_server/client"
 require "language_server/protocol"
 
-Dir[File.join(File.expand_path(__dir__), "support/**/*.rb")].sort.each do |rb|
+Dir[File.join(File.expand_path(__dir__), "support/**/*.rb")].each do |rb|
   require rb
 end
 
