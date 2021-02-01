@@ -5,6 +5,7 @@ require "simplecov"
 SimpleCov.start do
   track_files "lib/clangd_client/**/*.rb"
   add_filter %r{^/spec/}
+  enable_coverage :branch
 end
 
 require "clangd_client"
