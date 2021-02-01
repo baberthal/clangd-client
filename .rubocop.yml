@@ -92,4 +92,12 @@ Style/PerlBackrefs:
 Style/ParallelAssignment:
   Enabled: false
 
+################
+#  RSpec Cops  #
+################
+
+RSpec/FilePath:
+  Exclude:
+    - spec/language_server/**/*.rb
+
 #  vim: set ts=8 sw=2 tw=0 ft=yaml et :
