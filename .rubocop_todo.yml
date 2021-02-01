@@ -31,6 +31,8 @@ Lint/UnreachableLoop:
 # Configuration parameters: IgnoredMethods, CountRepeatedAttributes.
 Metrics/AbcSize:
   Max: 27
+  Exclude:
+    - 'lib/language_server/client/language_server_connection.rb'
 
 # Offense count: 1
 # Configuration parameters: CountComments, CountAsOne.
