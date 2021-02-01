@@ -40,21 +40,29 @@ module Spec
     #   puts msgs
     #
     def with_redirected_stdout
-      ret = nil
-      t = Tempfile.new("vim-channel-tests")
+      return_value = nil
+      fake_stdout = Tempfile.new("language-server-test-io")
 
       begin
         old_stdout = $stdout.dup
-        $stdout.reopen(t)
+        $stdout.reopen(fake_stdout)
         $stdout.sync = true
         yield
-        t.rewind
-        ret = t.read
+        $stdout.fsync
+        fake_stdout.rewind
+        return_value = fake_stdout.read
       ensure
         $stdout.reopen(old_stdout)
-        t.close
+        fake_stdout.close
       end
-      ret
+      return_value
+    end
+
+    def temporary_executable(extension = ".exe")
+      Tempfile.open(["Temp", extension]) do |executable|
+        executable.chmod(0o0100) # S_IXUSR
+        yield executable.path
+      end
     end
   end
 end
