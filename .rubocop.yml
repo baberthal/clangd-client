@@ -102,4 +102,7 @@ RSpec/FilePath:
   Exclude:
     - spec/language_server/**/*.rb
 
+RSpec/MultipleExpectations:
+  Max: 2
+
 #  vim: set ts=8 sw=2 tw=0 ft=yaml et :

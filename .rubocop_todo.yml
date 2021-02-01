@@ -35,22 +35,26 @@ Metrics/AbcSize:
 # Offense count: 1
 # Configuration parameters: CountComments, CountAsOne.
 Metrics/ClassLength:
-  Max: 179
+  Exclude:
+    - 'lib/language_server/client/language_server_connection.rb'
 
 # Offense count: 2
 # Configuration parameters: IgnoredMethods.
 Metrics/CyclomaticComplexity:
-  Max: 13
+  Exclude:
+    - 'lib/language_server/client/language_server_connection.rb'
 
 # Offense count: 5
 # Configuration parameters: CountComments, CountAsOne, ExcludedMethods, IgnoredMethods.
 Metrics/MethodLength:
-  Max: 25
+  Exclude:
+    - 'lib/language_server/client/language_server_connection.rb'
 
 # Offense count: 2
 # Configuration parameters: IgnoredMethods.
 Metrics/PerceivedComplexity:
-  Max: 13
+  Exclude:
+    - 'lib/language_server/client/language_server_connection.rb'
 
 # Offense count: 2
 # Configuration parameters: EnforcedStyle, CheckMethodNames, CheckSymbols, AllowedIdentifiers.
