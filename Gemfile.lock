@@ -65,6 +65,7 @@ GEM
     rb-fsevent (0.10.4)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
+    rbs (1.0.4)
     regexp_parser (2.0.3)
     reverse_markdown (2.0.0)
       nokogiri
@@ -135,9 +136,11 @@ DEPENDENCIES
   concurrent-ruby-ext
   guard
   guard-rspec
+  listen
   pry
   pry-byebug
   rake (~> 13.0)
+  rbs
   rspec (~> 3.0)
   rubocop
   rubocop-rake
