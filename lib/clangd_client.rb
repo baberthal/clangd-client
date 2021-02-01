@@ -27,11 +27,25 @@ module ClangdClient
     /darwin/i.match?(RUBY_PLATFORM)
   end
 
+  # Returns +true+ if ClangdClient is running on a unix-like platform other than
+  # darwin or linux.
+  #
+  # @return [Boolean]
+  def self.other_unix?
+    /(aix|(net|free|open)bsd|cygwin|solaris|irix|hpux)/i.match?(RUBY_PLATFORM)
+  end
+
   # Returns +true+ if ClangdClient is running on a unix-like platform.
   #
   # @return [Boolean]
   def self.unix?
-    linux? || darwin? ||
-      /(aix|(net|free|open)bsd|cygwin|solaris|irix|hpux)/i.match?(RUBY_PLATFORM)
+    linux? || darwin? || other_unix?
+  end
+
+  # Returns +true+ if ClangdClient is running on a windows platform.
+  #
+  # @return [Boolean]
+  def self.windows?
+    !unix?
   end
 end
