@@ -5,8 +5,10 @@ require "language_server/common/logging"
 require "language_server/common/process_handle"
 require "language_server/common/utils"
 
-# Common code for the language server library.
 module LanguageServer
+  # Common code for the language server library.
+  module Common
+  end
 end
 
 LS = LanguageServer unless defined?(LS)
