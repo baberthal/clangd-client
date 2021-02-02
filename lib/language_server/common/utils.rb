@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "tempfile"
+require "language_server/common/process_handle"
 
 module LanguageServer
   # General utility methods with no other home.
@@ -74,7 +75,9 @@ module LanguageServer
       nil
     end
 
-    def safe_popen(*args) end
+    def popen(...)
+      ProcessHandle.new(...)
+    end
 
     def process_running?(handle)
       !handle.nil? && handle.poll.nil?
