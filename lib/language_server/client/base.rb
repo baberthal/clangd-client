@@ -137,10 +137,10 @@ module LanguageServer
         )
 
         Utils.open_for_std_handle(@stderr_file) do |stderr|
-          @server_handle = Utils.safe_popen(
+          @server_handle = Utils.popen(
             command_line,
-            stdin: PIPE,
-            stdout: PIPE,
+            stdin: ProcessHandle::PIPE,
+            stdout: ProcessHandle::PIPE,
             stderr: stderr,
             env: server_env
           )
@@ -206,6 +206,163 @@ module LanguageServer
         @server_info_mutex.synchronize { _reset }
       end
 
+      # Send the shutdown and possibly exit request to the server.
+      # Implementations must call this prior to closing the
+      # LanguageServerConnection or killing the downstream server.
+      def shutdown_server
+        # Language server protocol requires ordersly shutdown of the downstream
+        # server by first sending a shutdown request, and on its completion
+        # sending an exit notification (which does not receive a response). Some
+        # buggy servers exit on receipt of the shutdown request, so we handle
+        # that too.
+        if _server_initialized?
+          request_id = connection.next_request_id
+          msg = LS::Protocol.shutdown(request_id)
+
+          begin
+            connection.get_response(request_id, msg, REQUEST_TIMEOUT_INITIALIZE)
+          rescue ResponseAbortedError
+            # When the language server dies handling the shutdown request, it is
+            # aborted. Just return - we're done.
+            return
+          rescue StandardError
+            # Ignore other errors from the server and send the exit request
+            # anyway.
+            log_error "Shutdown request failed. Ignoring."
+          end
+        end
+
+        connection.send_notification(LS::Protocol.exit) if server_healthy?
+
+        # If any threads are waiting for the initialize echange to complete,
+        # release them, as there is no chance of getting a response now.
+        if !@initialize_response.nil? && !@initialize_event.set?
+          @initialize_response = nil
+          @initialize_event.set
+        end
+      end
+
+      def _restart_server(request_data, *args, **options)
+        shutdown
+        _start_and_initialize_server(request_data, *args, **options)
+      end
+
+      # Returns +true+ if the server is running and the initialization exchange
+      # has completed successfully. Implementations must not issue requests
+      # until this method returns +true+.
+      def _server_initialized?
+        return false unless server_healthy?
+
+        # We already got the initialize response
+        return true if @initialize_event.set?
+
+        # We never sent the initialize response
+        return false if @initialize_response.nil?
+
+        # Initialize request in progress. Will be handled asynchronously.
+        false
+      end
+
+      def server_healthy?
+        if command_line
+          Utils.process_running?(@server_handle)
+        else
+          @connection&.connected?
+        end
+      end
+
+      def server_ready?
+        _server_initialized?
+      end
+
+      # A string representing a human-readable name of the server.
+      #
+      # @return [String]
+      #
+      # ABSTRACT
+      def server_name
+        raise NotImplementedError
+      end
+
+      # +nil+, or a hash containing environment variables for ther server
+      # process.
+      #
+      # @return [Hash{String=>String,nil}, nil]
+      def server_env
+        nil
+      end
+
+      # An override in a concrete class needs to return a list of CLI arguments
+      # for starting the LSP server.
+      #
+      # @return [Array<String>]
+      #
+      # ABSTRACT
+      def command_line
+        raise NotImplementedError
+      end
+
+      # If the concrete client wants to response to workspace/configuration
+      # requests, it should override this method.
+      def workspace_conf_response(_request)
+        nil
+      end
+
+      # If the server has special capabilities, override this method.
+      #
+      # @return [Hash]
+      def extra_capabilities
+        {}
+      end
+
+      # Returns the list of server logs, other than stderr.
+      #
+      # @return [Array<String>]
+      def additional_log_files
+        []
+      end
+
+      # An Array of DebugInfoItems
+      #
+      # @return [Array<DebugInfoItem>]
+      def extra_debug_items(_request_data)
+        []
+      end
+
+      def debug_info(request_data)
+        @server_info_mutex.synchronize do
+          extras = common_debug_items + extra_debug_items(request_data)
+          logfiles = [@stdout_file, @stderr_file] + additional_log_files
+          return DebugInfoItem.new(
+            name: server_name,
+            handle: @server_handle,
+            executable: command_line,
+            port: @connection_type == :tcp ? @port : nil,
+            logfiles: logfiles,
+            extras: extras
+          )
+        end
+      end
+
+      # Starts the server and sends the initilize request, assuming the start is
+      # successful. +args+ and +options+ are passed through to ther underlying
+      # call to {#start_server}. In general, clients don't need to call this as
+      # it is called automatically in {#on_file_ready_to_parse}, but this may
+      # be used in client subcommands that require restarting the underlying
+      # server.
+      def _start_and_initialize_server(request_data, *args, **options)
+        @server_started = false
+        # @extra_conf_dir = _get_settings_from_extra_conf(request_data)
+
+        # Only attempt to start the server once. Set this after above call as it
+        # may throw an error.
+        @server_started = true
+
+        if start_server(request_data, *args, **options)
+          _send_initialize(request_data)
+        end
+      end
+
       # Returns an array of defined subcommands for this client.
       #
       # @return [Array<String>]
@@ -238,7 +395,26 @@ module LanguageServer
         end
       end
 
-      def on_file_ready_to_parse(request_data) end
+      def on_file_ready_to_parse(request_data)
+        if !server_healthy? && !@server_started
+          _start_and_initialize_server(request_data)
+        end
+
+        return unless server_healthy?
+
+        unless @initialize_event.set?
+          @on_file_ready_to_parse_handlers.reverse.each do |handler|
+            _on_initialize_complete(handler)
+          end
+          return
+        end
+
+        @on_file_ready_to_parse_handlers.reverse.each do |handler|
+          handler.call(self, request_data)
+        end
+
+        # TODO: Finish this up
+      end
 
       def on_file_save(request_data) end
 
@@ -276,18 +452,6 @@ module LanguageServer
 
       def supported_filetypes
         Set.new
-      end
-
-      def debug_info(_request_data)
-        ""
-      end
-
-      def server_ready?
-        server_healthy?
-      end
-
-      def server_healthy?
-        true
       end
 
       def poll_for_messages(request_data)
