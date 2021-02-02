@@ -12,7 +12,6 @@ module LanguageServer
     # TODO: Document
     class LanguageServerConnection
       include Logging
-      include ThreadStartable
       extend Forwardable
 
       CONNECTION_TIMEOUT = 5
