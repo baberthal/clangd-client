@@ -74,6 +74,10 @@ Naming/MethodParameterName:
     - io
     - fd
 
+Naming/MemoizedInstanceVariableName:
+  Exclude:
+    - lib/language_server/common/async_process/handle.rb
+
 ################
 #  Style Cops  #
 ################
