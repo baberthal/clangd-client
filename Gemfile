@@ -13,6 +13,12 @@ gem "concurrent-ruby-ext", platform: :mri
 
 gem "listen"
 
+gem "async-io"
+
+gem "abc", path: "../abc"
+
+gem "subprocess"
+
 group :development, :test do
   # Use the new static analysis system
   gem "rbs"
