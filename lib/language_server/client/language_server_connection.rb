@@ -4,6 +4,7 @@ require "language_server/common/logging"
 require "language_server/client/response"
 require "language_server/protocol"
 require "forwardable"
+require "abc"
 
 module LanguageServer
   module Client
@@ -13,15 +14,41 @@ module LanguageServer
     class LanguageServerConnection
       include Logging
       extend Forwardable
+      extend ABC::ABCMeta
 
       CONNECTION_TIMEOUT = 5
       MAX_QUEUED_MESSAGES = 500
 
       def_delegators :@thread, :join, :alive?
 
-      def try_server_connection_blocking
-        raise NotImplementedError
-      end
+      # @!method try_server_connection_blocking
+      # Connect to the server and return when the connection is established.
+      #
+      # @return [Void]
+      abstract_method :try_server_connection_blocking
+
+      # @!method connected?
+      # Return +true+ if the socket is connected.
+      #
+      # @return [Boolean]
+      abstract_method :connected?
+
+      # @!method write_data(data)
+      # Write some data to the server.
+      #
+      # @param data [String] Data to write to the socket.
+      #
+      # @return [Void]
+      abstract_method :write_data
+
+      # @!method read_data(size = -1)
+      # Read some data from the server, blocking until it becomes available.
+      #
+      # @param size [Integer] Number of bytes to read, or -1 to read until a new
+      #   line.
+      #
+      # @return [Void]
+      abstract_method :read_data
 
       def _cancel_listeners
         @listeners.map(&:stop)
@@ -29,18 +56,6 @@ module LanguageServer
 
       def shutdown
         _cancel_listeners
-      end
-
-      def connected?
-        raise NotImplementedError
-      end
-
-      def write_data(data)
-        raise NotImplementedError
-      end
-
-      def read_data(size = -1)
-        raise NotImplementedError
       end
 
       def initialize(project_directory, listener_factory:,
