@@ -139,8 +139,8 @@ module LanguageServer
         Utils.open_for_std_handle(@stderr_file) do |stderr|
           @server_handle = Utils.popen(
             command_line,
-            stdin: ProcessHandle::PIPE,
-            stdout: ProcessHandle::PIPE,
+            stdin: Subprocess::PIPE,
+            stdout: Subprocess::PIPE,
             stderr: stderr,
             env: server_env
           )
@@ -458,9 +458,89 @@ module LanguageServer
         poll_for_messages_inner(request_data, MESSAGE_POLL_TIMEOUT)
       end
 
-      def poll_for_messages_inner(_request_data, _timeout)
-        false
+      def poll_for_messages_inner(request_data, timeout)
+        # If there are messages pending in the queue, return them immediately
+        messages = _get_pending_messages(request_data)
+        return messages if messages
+
+        # Otherwise, block until we get one or we hit the timeout
+        _await_server_messages(request_data, timeout)
       end
+
+      # Convert any pending notifications to messages and return them in an
+      # Array.  If there are no messages pending, returns an empty Array.
+      # Returns +false+ if an error occured and no further polling should be
+      # attempted.
+      #
+      # @return [Array, false]
+      def _get_pending_messages(request_data)
+        messages = []
+
+        return messages unless @initialize_event.set?
+
+        begin
+          loop do
+            return false unless connection
+
+            notification = connection._notifications.pop(true)
+            message = convert_notification_to_message(request_data, notification)
+
+            messages.push(message) if message
+          end
+        rescue ThreadError
+          # We drained the queue
+          nil
+        end
+
+        messages
+      end
+
+      # Block until we receive a notification, or a timeout occurs.
+      #
+      # Returns one on the following:
+      #   - an Array containing a single message
+      #   - +true+ if a tiemout occurred, and the poll should be restarted
+      #   - +false+ if an error occured, and no further polling should be
+      #     attempted
+      def _await_server_messages(request_data, timeout)
+        loop do
+          unless @initialize_event.set?
+            @initialize_event.wait(timeout)
+            return !@server_started || @initialize_event.set?
+          end
+
+          return false unless connection
+
+          notification = connection._notifications.pop(timeout: timeout)
+          message = convert_notification_to_message(notification, request_data)
+
+          return [message] if message
+        rescue ThreadError
+          return true
+        end
+      end
+
+      def default_notification_handler
+        ->(_, notification) { handle_notification_in_poll_thread(notification) }
+      end
+
+      def handle_notification_in_poll_thread(notification) end
+
+      def convert_notification_to_message(request_data, notification) end
+
+      def _update_server_with_file_contents(request_data)
+        @server_info_mutex.synchronize do
+          _update_dirty_files_under_lock(request_data)
+          files_to_purge = _update_saved_files_under_lock(request_data)
+          _purge_missing_files_under_lock(files_to_purge)
+        end
+      end
+
+      def _update_dirty_files_under_lock(request_data) end
+
+      def _update_saved_files_under_lock(request_data) end
+
+      def _purge_missing_files_under_lock(files_to_purge) end
 
       def get_settings(_mod, _request_data)
         # TODO: Figure out an elegant way to do this in ruby
