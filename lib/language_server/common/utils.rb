@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "tempfile"
-require "language_server/common/process_handle"
+require "subprocess"
 
 module LanguageServer
   # General utility methods with no other home.
@@ -76,7 +76,7 @@ module LanguageServer
     end
 
     def popen(...)
-      ProcessHandle.new(...)
+      Subprocess.popen(...)
     end
 
     def process_running?(handle)

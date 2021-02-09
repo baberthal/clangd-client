@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "open3"
+require "subprocess"
 
 module ClangdClient
   # Simple class to parse and store the version of clangd we are running.
@@ -26,7 +26,8 @@ module ClangdClient
     #
     # @return [Version]
     def self.get(clangd_path)
-      stdout, = Open3.capture2(clangd_path, "--version")
+      args = [clangd_path, "--version"]
+      stdout, = Subprocess.popen(args, stdout: Subprocess::PIPE).communicate
       parse(stdout)
     end
 
